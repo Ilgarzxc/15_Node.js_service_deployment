@@ -1,0 +1,39 @@
+---
+# Copy files from the source machine to set up node.js listener
+# on remote server
+
+- name: Create nodeapp user
+  user:
+    name: nodeapp
+    system: yes
+    create_home: no
+
+- name: Create a project directory
+  file:
+    path: /www/
+    state: directory
+    owner: nodeapp
+    group: nodeapp
+    mode: '0755'
+
+- name: Copy node.js app to the server
+  ansible.builtin.copy:
+    src: /home/ilgar/Documents/15_Node.js_service_deployment/nodejs_app_hello_world
+    dest: /www/
+    owner: nodeapp
+    group: nodeapp
+    mode: '0755'
+
+- name: Template nodejs systemd service to /etc/systemd/user
+  ansible.builtin.template:
+    src: helloworld_nodeapp.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+    mode: '0644'
+    
+- name: Enable and start nodejs systemd service
+  ansible.builtin.systemd_service:
+    state: started
+    name: helloworld_nodeapp
+    

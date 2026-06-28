@@ -10,3 +10,7 @@ output "public-ip-for-compute-instance" {
 output "time-created" {
     value = oci_core_instance.staging_vm.time_created
 }
+
+output "name" {
+    value = oci_core_instance.staging_vm.display_name
+}
