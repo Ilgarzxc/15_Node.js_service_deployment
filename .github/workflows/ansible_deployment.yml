@@ -10,14 +10,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Add SSH key
+      - name: Test SSH
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          echo "${{ secret.SSH_PRIVATE_KEY }}" > key.pem
           chmod 600 key.pem
-          ssh-agent bash -c "ssh-add key.pem"
-
-      - name: Test SSH connection
-        run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.SERVER_IP }} "echo connected"
 
       - name: Install Ansible
