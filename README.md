@@ -125,5 +125,3 @@ The file `ansible/nginx/templates/nginx.conf.j2` configures nginx to proxy reque
 - nginx proxies traffic to the Node.js app on port `8001`
 - the public IP address comes from Terraform output `public-ip-for-compute-instance`
 - The intended public endpoint is `http://<PUBLIC_IP>/`, which should return `Hello World` after a successful deployment.
-
-Ц
