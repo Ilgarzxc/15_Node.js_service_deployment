@@ -10,7 +10,7 @@
 
 - name: Create a project directory
   file:
-    path: /www/
+    path: /opt/
     state: directory
     owner: nodeapp
     group: nodeapp
@@ -19,7 +19,7 @@
 - name: Copy node.js app to the server
   ansible.builtin.copy:
     src: /home/ilgar/Documents/15_Node.js_service_deployment/nodejs_app_hello_world
-    dest: /www/
+    dest: /opt/
     owner: nodeapp
     group: nodeapp
     mode: '0755'

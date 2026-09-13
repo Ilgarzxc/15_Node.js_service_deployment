@@ -1,6 +1,6 @@
 staging:
     hosts:
         staging-vm:
-            ansible_host: 79.72.19.24
+            ansible_host: ${SERVER_IP}
             ansible_user: ubuntu
             ansible_group: ubuntu
