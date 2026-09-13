@@ -1,0 +1,40 @@
+on:
+  push:
+    branches: 
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Add SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+          ssh-agent bash -c "ssh-add key.pem"
+
+      - name: Test SSH connection
+        run: |
+          ssh -o StrictHostKeyChecking=no opc@${{ secrets.SERVER_IP }} "echo connected"
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Create inventory
+        run: |
+          echo "all:" > inventory.yaml
+          echo "  hosts:" >> inventory.yaml
+          echo "    staging-vm:" >> inventory.yaml
+          echo "      ansible_host: ${{ secrets.SERVER_IP }}" >> inventory.yaml
+          echo "      ansible_user: ubuntu" >> inventory.yaml
+
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook setup.yml --tags app
+
