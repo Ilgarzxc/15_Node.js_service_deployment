@@ -7,7 +7,7 @@ After=multi-user.target
 Wants=network.target
 
 [Service]
-WorkingDirectory=/www/nodejs_app_hello_world/
+WorkingDirectory=/opt/nodejs_app_hello_world/
 ExecStart=/usr/bin/node index.js
 Type=simple
 Restart=always
