@@ -13,8 +13,9 @@ The implementation uses:
 ## Roadmap Reference
 
 - This project references the roadmap task: https://roadmap.sh/projects/nodejs-service-deployment
-- The current repository covers manual Terraform and Ansible deployment.
+- The repository covers Terraform provisioning, Ansible configuration, and a GitHub Actions deployment workflow.
 - The repository uses OCI instead of the DigitalOcean example described in the roadmap.
+- The roadmap requires both a manual Ansible deployment and automated deployment through GitHub Actions.
 
 ## Project Structure
 
@@ -29,7 +30,7 @@ The implementation uses:
 - Ubuntu-based server with installed packages: `git`, `ufw`, `vim`, `fail2ban`, `nodejs`, `npm`
 - nginx as a reverse proxy
 - systemd service `helloworld_nodeapp`
-- Node.js application copied to `/www/nodejs_app_hello_world/`
+- Node.js application copied by the `app` role to `/opt/nodejs_app_hello_world/`
 - nginx proxying traffic to `127.0.0.1:8001`
 
 ## Ansible Components
@@ -38,7 +39,7 @@ The playbook `ansible/setup.yml` includes these roles:
 
 - `base` — base server setup, OS updates, UFW firewall rules, fail2ban, Node.js and npm installation
 - `nginx` — install nginx, deploy the site config, and enable nginx
-- `app` — create the nodeapp user, copy the Node.js app, deploy the systemd unit, and start the app service
+- `app` — create the nodeapp user, copy the local Node.js app, deploy the systemd unit, and start the app service
 
 Additional repository files:
 
@@ -87,7 +88,9 @@ The `nodejs_app_hello_world/` folder contains:
 - `index.js` — a simple Node.js HTTP server listening on port `8001`
 - `package.json` — application metadata and start command
 
-The `app` role copies this folder to the server under `/www/` and deploys the `helloworld_nodeapp` systemd service.
+The `app` role copies this folder to the server under `/opt/` and deploys the `helloworld_nodeapp` systemd service.
+
+The current role does not clone the repository, run `npm install`, or run a build on the server. It copies the application from the absolute local path configured in the task file.
 
 ## nginx
 
@@ -121,12 +124,37 @@ The file `ansible/nginx/templates/nginx.conf.j2` configures nginx to proxy reque
 - The Node.js application runs as the `helloworld_nodeapp` systemd service
 - nginx proxies traffic to the Node.js app on port `8001`
 - the public IP address comes from Terraform output `public-ip-for-compute-instance`
+- The intended public endpoint is `http://<PUBLIC_IP>/`, which should return `Hello World` after a successful deployment.
+
+## Roadmap Compliance
+
+### Required setup
+
+- [x] Terraform provisions a public cloud VM (OCI is used instead of DigitalOcean).
+- [x] Ansible installs Node.js and npm.
+- [x] The repository contains a simple Node.js HTTP service with a `/` response.
+- [x] The repository contains a GitHub Actions workflow for deployment.
+
+### Task #1: Manual Ansible Deployment
+
+- [x] An `app` role exists and is invoked with the `app` tag.
+- [ ] The `app` role clones the repository on the server. It currently copies a local absolute path instead.
+- [ ] The `app` role installs dependencies and builds the application. These steps are currently absent.
+- [ ] The application is verified to be running on port 80. The service path is inconsistent: the role copies to `/opt/`, while the systemd unit uses `/www/`.
+
+### Task #2: Automated Deployment with GitHub Actions
+
+- [x] A workflow exists at `.github/workflows/ansible_deployment.yml` and runs on pushes to `main`.
+- [x] The workflow installs Ansible and attempts to run the playbook with the `app` tag.
+- [ ] The workflow is not currently verified as runnable: the SSH agent is started in a subshell, the connection test uses `opc` while the generated inventory uses `ubuntu`, and the playbook is invoked from the repository root although it is located in `ansible/setup.yml`.
+
+Overall, the repository contains the main infrastructure and deployment pieces, but it does not yet fully satisfy the roadmap requirements. The missing application installation/build steps, the service-directory mismatch, and the workflow issues need to be resolved before claiming a complete working deployment.
 
 ## Notes
 
 - `ansible/ansible.cfg` sets the default inventory and SSH private key file.
 - `terraform/outputs.tf` includes the instance public IP and name outputs.
-- This repository does not contain a GitHub Actions workflow for deployment.
-- The current configuration is built for manual deployment via Terraform and Ansible.
+- The GitHub Actions workflow expects the `SSH_PRIVATE_KEY` and `SERVER_IP` repository secrets.
+- The current configuration supports manual Terraform/Ansible deployment and includes an automation workflow that requires verification and fixes.
 
 
